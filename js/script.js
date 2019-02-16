@@ -13,22 +13,28 @@ $(function() {
     function createErrorMessage(errorElement) {
         let whichError;
         const isCCNumber = ((errorElement.id) && (errorElement.id === 'cc-num'));
+        const isZip = ((errorElement.id) && (errorElement.id === 'zip'));
+        const isCVV = ((errorElement.id) && (errorElement.id === 'cvv'));
         const messages = {
             name: "You must enter your name to register",
             mail: "Please enter a valid email address",
             activity: "Please register for at least one activity",
-            ccnum: "Please enter 13 to 16 numbers for your credit card "
+            ccnum: "Please enter 13 to 16 numbers for your credit card",
+            zip: "Please enter exactly 5 numbers for your zip code",
+            cvv: "Please enter exactly 3 numbers for your CVV"
         };
 
-        whichError =  (errorElement.id) ? messages[errorElement.id] 
-                                            : messages.activity;
+        if (errorElement.id) {
+            whichError = (isCCNumber) ? messages.ccnum : messages[errorElement.id];
+        } else {
+            whichError = messages.activity;
+        }
 
-        if (isCCNumber) {
-            whichError = messages.ccnum;
-        } 
         const errorHTML = `<div class="error">${whichError}</div>`;
         if (errorElement.id) {
-            errorElement = (isCCNumber) ? $("fieldset:last legend") : errorElement; 
+            errorElement = (isCCNumber || isZip || isCVV) ? 
+                $("fieldset:last legend") 
+                : errorElement; 
             $(errorHTML).hide().insertAfter(errorElement).fadeIn(2000);
         } else {
             $(errorElement).prepend(errorHTML);
@@ -36,20 +42,27 @@ $(function() {
     }
 
     function validateField(fieldValue, fieldName) {
-        let testField;
-        if (fieldName === 'cc-num') {fieldName = 'ccnum'};
 
+        let testField;
+        let paymentField = (fieldName === 'cc-num' 
+                            || fieldName === 'zip'
+                            || fieldName === 'cvv');
+        
+
+        if (fieldName === 'cc-num') {fieldName = 'ccnum'};
         regexTests = {
             name: /[A-Za-z]{2}/g,
             mail: /[^@]+@[^@]+\.[a-z]+$/,
-            ccnum: /^\d{13,16}$/
+            ccnum: /^\d{13,16}$/,
+            zip: /^\d{5}$/,
+            cvv: /^\d{3}$/
         };
 
         if (fieldName === 'name') {
             //for name, remove any non-alphabetic characters
             testField = fieldValue.replace(/[^A-Za-z]/g, "");
         } else if (fieldName === 'ccnum') {
-            //for credit cards, remove any spaces or dashes user inputs
+            //creditcard, remove any spaces or dashes user inputs
             testField = fieldValue.replace(/[\s-]/g, ""); 
         } else {
             testField = fieldValue.trim();
@@ -58,11 +71,18 @@ $(function() {
     }
 
     function processValidation(checkElement) {
+        console.log(checkElement.target.id);
         let hasErrorMessage;
-            hasErrorMessage = $(checkElement.target).next().hasClass("error");
-            if (checkElement.target.id === "cc-num") {
-                hasErrorMessage = $("fieldset:last legend").next().hasClass("error");
-            }
+        let isPaymentField = ((checkElement.target.id === "cc-num")
+                            || (checkElement.target.id === "zip")
+                            || (checkElement.target.id === "cvv"));
+
+                            console.log(isPaymentField);
+
+        hasErrorMessage = $(checkElement.target).next().hasClass("error");
+        if (isPaymentField) {
+            hasErrorMessage = $("fieldset:last legend").next().hasClass("error");
+        }
         //hasErrorMessage = $(checkElement.target).next().hasClass("error");
         if (!validateField(checkElement.target.value, checkElement.target.id)) {
             $(checkElement.target).addClass('errorInput');
@@ -73,9 +93,15 @@ $(function() {
         } else {
             $(checkElement.target).removeClass('errorInput');
             if (hasErrorMessage) {
-                $(checkElement.target).next().fadeOut(1000, function() {
-                    $(this).remove();
-                });
+                if (isPaymentField) {
+                    $("fieldset:last legend").next().fadeOut(700, function() {
+                        $(this).remove();
+                    });
+                } else {
+                    $(checkElement.target).next().fadeOut(700, function() {
+                        $(this).remove();
+                    });
+                }
             }
         }
     }
@@ -87,7 +113,7 @@ $(function() {
         }
         $('html, body').animate({
             scrollTop: $activitiesLocation.offset().top
-        }, 1000);
+        }, 700);
     }
 
     $("#name").on('focusout', function(e) {
@@ -98,13 +124,22 @@ $(function() {
         processValidation(e);
     });;
 
-    $("#cc-num").on('focusout', function(e) {
+    $("#cc-num").on('keyup focusout', function(e) {
         if (!($("p.totalCost").length)) {
             errorNoActivity();
         } else {
             processValidation(e);
         }
     });
+
+    $("#zip").on('keyup focusout', function(e) {
+            processValidation(e);
+    });
+
+    $("#cvv").on('keyup focusout', function(e) {
+        processValidation(e);
+});
+
 
     $("#title").on('change', function(e) {
         if ($(this).children("option:selected").val() === 'other') {
