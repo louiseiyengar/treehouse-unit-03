@@ -159,11 +159,7 @@ button:hover {
 	border: 2px dotted #990000;
 }
 
-.errorPaymentError {
-	border: 1px dashed #990000;
-}
-
-.error {
+.error, .success {
 	margin: -2.8% auto 2% auto;
 	border: 1px solid white;
 	max-width: 50%;
@@ -173,6 +169,10 @@ button:hover {
 	background-color: #003366;
   	color: white;
   	font-size: 80%;
+}
+
+.success {
+	background-color: #007700;
 }
 
 /* ================================= 
