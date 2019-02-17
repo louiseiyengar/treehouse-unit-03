@@ -1,6 +1,21 @@
 $(function() {
     $("form").submit(function(e){
         e.preventDefault();
+        processValidation($('#name')[0]);
+        processValidation($('#mail')[0]);
+        if (!($("p.totalCost").length)) {
+            errorNoActivity();
+        } else {
+            if ($("select#payment option:selected").val() === 'credit card') { 
+                if (!(validateField($('#cc-num').val(), 'cc-num'))) {
+                    processValidation($("#cc-num")[0]);
+                } else if (!(validateField($('#zip').val(), 'zip'))) {
+                    processValidation($("#zip")[0]);
+                } else {
+                    processValidation($("#cvv")[0]);
+                }
+            }
+        }
     });
 
     //set focus on first input field
@@ -21,13 +36,23 @@ $(function() {
             activity: "Please register for at least one activity",
             ccnum: "Please enter 13 to 16 numbers for your credit card",
             zip: "Please enter exactly 5 numbers for your zip code",
-            cvv: "Please enter exactly 3 numbers for your CVV"
+            cvv: "Please enter exactly 3 numbers for your CVV",
+            empty: "Please be sure to enter valid credit card information"
         };
 
         if (errorElement.id) {
             whichError = (isCCNumber) ? messages.ccnum : messages[errorElement.id];
         } else {
             whichError = messages.activity;
+        }
+        
+        if (isCCNumber || isZip || isCVV) {
+            if (($('#cc-num').val().trim().length == 0) ||
+                ($('#zip').val().trim().length == 0)    ||
+                ($('#cvv').val().trim().length == 0)) 
+            {
+                whichError = messages.empty;
+            }
         }
 
         const errorHTML = `<div class="error">${whichError}</div>`;
@@ -42,7 +67,6 @@ $(function() {
     }
 
     function validateField(fieldValue, fieldName) {
-
         let testField;
         let paymentField = (fieldName === 'cc-num' 
                             || fieldName === 'zip'
@@ -71,34 +95,31 @@ $(function() {
     }
 
     function processValidation(checkElement) {
-        console.log(checkElement.target.id);
         let hasErrorMessage;
-        let isPaymentField = ((checkElement.target.id === "cc-num")
-                            || (checkElement.target.id === "zip")
-                            || (checkElement.target.id === "cvv"));
+        let isPaymentField = ((checkElement.id === "cc-num")
+                            || (checkElement.id === "zip")
+                            || (checkElement.id === "cvv"));
 
-                            console.log(isPaymentField);
-
-        hasErrorMessage = $(checkElement.target).next().hasClass("error");
+        hasErrorMessage = $(checkElement).next().hasClass("error");
         if (isPaymentField) {
             hasErrorMessage = $("fieldset:last legend").next().hasClass("error");
         }
-        //hasErrorMessage = $(checkElement.target).next().hasClass("error");
-        if (!validateField(checkElement.target.value, checkElement.target.id)) {
-            $(checkElement.target).addClass('errorInput');
+
+        if (!validateField(checkElement.value, checkElement.id)) {
+            $(checkElement).addClass('errorInput');
             if (!hasErrorMessage) {
-                createErrorMessage(checkElement.target);
+                createErrorMessage(checkElement);
             }
-            $(checkElement.target).focus();
+            $(checkElement).focus();
         } else {
-            $(checkElement.target).removeClass('errorInput');
+            $(checkElement).removeClass('errorInput');
             if (hasErrorMessage) {
                 if (isPaymentField) {
                     $("fieldset:last legend").next().fadeOut(700, function() {
                         $(this).remove();
                     });
                 } else {
-                    $(checkElement.target).next().fadeOut(700, function() {
+                    $(checkElement).next().fadeOut(700, function() {
                         $(this).remove();
                     });
                 }
@@ -117,27 +138,27 @@ $(function() {
     }
 
     $("#name").on('focusout', function(e) {
-        processValidation(e);
+        processValidation(e.target);
     });
 
     $("#mail").on('keyup focusout', function(e) {
-        processValidation(e);
+        processValidation(e.target);
     });;
 
     $("#cc-num").on('keyup focusout', function(e) {
         if (!($("p.totalCost").length)) {
             errorNoActivity();
         } else {
-            processValidation(e);
+            processValidation(e.target); 
         }
     });
 
     $("#zip").on('keyup focusout', function(e) {
-            processValidation(e);
+            processValidation(e.target);
     });
 
     $("#cvv").on('keyup focusout', function(e) {
-        processValidation(e);
+        processValidation(e.target);
 });
 
 
@@ -267,10 +288,17 @@ $(function() {
                 case 'credit card': 
                     adjustPaymentDiv (paypalDiv, bitcoinDiv, creditCardDiv);
                     break;
-                case 'paypal': 
+                case 'paypal':
+                    // 
+                     $('fieldset:last input[type="text"]').each(function(i, element) {
+                         $(element).val('');
+                     });
                     adjustPaymentDiv (creditCardDiv, bitcoinDiv, paypalDiv);
                     break;
                 case 'bitcoin':
+                    $('fieldset:last input[type="text"]').each(function(i, element) {
+                        $(element).val('');
+                    });
                     adjustPaymentDiv (creditCardDiv, paypalDiv, bitcoinDiv);
                     break;
                 default:

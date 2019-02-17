@@ -159,6 +159,10 @@ button:hover {
 	border: 2px dotted #990000;
 }
 
+.errorPaymentError {
+	border: 1px dashed #990000;
+}
+
 .error {
 	margin: -2.8% auto 2% auto;
 	border: 1px solid white;
