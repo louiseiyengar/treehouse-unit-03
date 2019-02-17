@@ -20,7 +20,7 @@ $(function() {
 
     //set focus on first input field
     $("input:text:first").focus();
-    $("#color").prop("disabled", true);
+    $("div#colors-js-puns").hide();
     totalCost = 0;
     //hide other-title text field until 'Other' is selected in Job Role dropdown menu 
     $("#other-title").addClass('is-hidden');
@@ -46,14 +46,11 @@ $(function() {
             whichError = messages.activity;
         }
         
-        if (isCCNumber || isZip || isCVV) {
-            if (($('#cc-num').val().trim().length == 0) ||
-                ($('#zip').val().trim().length == 0)    ||
-                ($('#cvv').val().trim().length == 0)) 
-            {
-                whichError = messages.empty;
-            }
-        }
+      //  if (isCCNumber || isZip || isCVV) {
+            if (isCCNumber && $('#cc-num').val().trim().length == 0) { whichError = messages.empty; }
+            if (isZip && $('#zip').val().trim().length == 0) { whichError = messages.empty; }
+            if (isCVV & $('#cvv').val().trim().length == 0) { whichError = messages.empty; }
+       // }
 
         const errorHTML = `<div class="error">${whichError}</div>`;
         if (errorElement.id) {
@@ -146,19 +143,26 @@ $(function() {
     });;
 
     $("#cc-num").on('keyup focusout', function(e) {
+        
         if (!($("p.totalCost").length)) {
             errorNoActivity();
         } else {
-            processValidation(e.target); 
+            if ($("select#payment option:selected").val() === 'credit card') {
+                processValidation(e.target); 
+            }
         }
     });
 
     $("#zip").on('keyup focusout', function(e) {
-            processValidation(e.target);
+        if ($("select#payment option:selected").val() === 'credit card') {
+            processValidation(e.target); 
+        }
     });
 
     $("#cvv").on('keyup focusout', function(e) {
-        processValidation(e.target);
+        if ($("select#payment option:selected").val() === 'credit card') {
+            processValidation(e.target); 
+        }
 });
 
 
@@ -172,6 +176,11 @@ $(function() {
 
     $("fieldset.shirt").on('change', function (e) {
         if (e.target.id === 'design') {
+            if ($(e.target)[0].selectedIndex > 0) {
+                $(e.target).parent().next().show();
+            } else {
+                $(e.target).parent().next().hide(); 
+            }
             const $punsColors = $('#color').children(":lt(3)");
             const $heartsColors = $('#color').children(":gt(2)");
 
@@ -181,9 +190,6 @@ $(function() {
                 $($showColors[0]).prop('selected', true);
             }
 
-            if  ($(e.target.children[0]).val() === 'Select Theme') {
-                $(e.target.children[0]).remove();
-            } 
             const $optionSelected = $(e.target).children("option:selected").val();
 
             $("#color").prop("disabled", false);
@@ -283,13 +289,14 @@ $(function() {
             }
 
             const optionSelected = $("select#payment option:selected").val();
-
+            if ($(e.target).prev().prev().hasClass("error")) {
+                $(e.target).prev().prev().remove();       
+            }
             switch (optionSelected) { 
                 case 'credit card': 
                     adjustPaymentDiv (paypalDiv, bitcoinDiv, creditCardDiv);
                     break;
                 case 'paypal':
-                    // 
                      $('fieldset:last input[type="text"]').each(function(i, element) {
                          $(element).val('');
                      });
