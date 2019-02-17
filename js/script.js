@@ -1,3 +1,7 @@
+/******************************************
+Treehouse Techdegree:
+FSJS project 3 - Interactive Form
+******************************************/
 $(function() {
     /*
         Intial setup for form
@@ -33,7 +37,7 @@ $(function() {
         Global Functions Section
     */
     //VALIDATION FUNCTIONS
-    //Given an element, this functions will create an error <div> with a message
+    //Given an element, this function will create an error <div> with a message
     //and append the message to the appropriate form location
     function createErrorMessage(errorElement) {
         let whichError;
