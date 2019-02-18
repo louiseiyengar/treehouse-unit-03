@@ -12,5 +12,8 @@ If you do not choose an activity and either change the payment type dropdown, or
 
 Finally, if you click the Register button, the first field to fail validation will receive focus and a validation message.  All fields are validated, and you will not be able to submit the form if all fields have not been validated. (Note that the form does not actually submit, since this was a validation project).
 
+URL for this project: https://louiseiyengar.github.io/treehouse-unit-03/
+
 Screen shot of Activities section validation:
-![unit03example](https://user-images.githubusercontent.com/42808209/52921794-fd00cb80-32e8-11e9-9f46-9a73be0acd7c.jpg)
+![unit03example](https://user-images.githubusercontent.com/42808209/52956910-7b4b8500-335e-11e9-9909-d1196d705ac4.jpg)
+
