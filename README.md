@@ -1,7 +1,6 @@
 # FSJS project 3 - Interactive Form
 
-For this project, I created validation for form fields.  The fields will be validated as you proceed through the form, and the validation
-will proceed one field at a time.  
+For this project, I created validation for form fields.  The fields will be validated as you proceed through the form.
 
 To Note:
 Validation for the name field occurs after the field loses focus.
@@ -10,7 +9,7 @@ Validation for the email and the three credit card payment fields (cc number, zi
 
 If you do not choose an activity and either change the payment type dropdown, or type in the credit card number field, you will scroll to the Activities section and recieve an error message.
 
-Finally, if you click the Register button, the first field to fail validation will receive focus and a validation message.  All fields are validated, and you will not be able to submit the form if all fields have not been validated. (Note that the form does not actually submit, since this was a validation project).
+Finally, if you click the Register button, all fields are validated, and you will not be able to submit the form if all fields have not been validated. (Note that the form does not actually submit, since this was a validation project).
 
 URL for this project: https://louiseiyengar.github.io/treehouse-unit-03/
 
