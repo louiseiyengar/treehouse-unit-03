@@ -141,11 +141,11 @@ $(function() {
             $(checkElement).removeClass('errorInput');
             if (hasErrorMessage) {
                 if (isPaymentField) {
-                    $("fieldset:last legend").next().fadeOut(400, function() {
+                    $("fieldset:last legend").next().fadeOut(600, function() {
                         $(this).remove();
                     });
                 } else {
-                    $(checkElement).next().fadeOut(400, function() {
+                    $(checkElement).next().fadeOut(600, function() {
                         $(this).remove();
                     });
                 }
@@ -270,7 +270,7 @@ $(function() {
         //Get rid of error message if one exists
         if (clickChecked 
             && $activitiesSection.children(":eq(0)").hasClass("error")) {
-                $activitiesSection.children(":eq(0)").fadeOut(700, function() {
+                $activitiesSection.children(":eq(0)").fadeOut(600, function() {
                     $(this).remove();
                 });
         }
