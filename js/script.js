@@ -369,7 +369,6 @@ $(function() {
     */
     //Validate fields, don't allow submission if any fields don't validate */
     $("form").submit(function(e) {
-        e.preventDefault();
         let invalidFields = false;      //boolean if any fields don't validate
         
         if (!processValidation($('#name')[0])) {
@@ -413,14 +412,12 @@ $(function() {
 
         //put error message and scroll to top of form if any fields don't validate
         if (invalidFields) {
+            e.preventDefault();
             if (!($(".failHTML").length)) {
                 failHTML = `<div class="error failHTML">Please correct the errors below to submit this registration.</div>`;
                 $(failHTML).hide().insertAfter("header").fadeIn(2000);
              }
              $('html, body').animate({scrollTop: '0px'}, 700);
-        } else {
-            //reload page to simulate form submission
-            window.location.reload(false);
         }
     });
 });
