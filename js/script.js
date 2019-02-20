@@ -128,24 +128,24 @@ $(function() {
             hasErrorMessage = $("fieldset:last legend").next().hasClass("error");
         }
 
-        //validation passes, error message created, form field gets focus
+        //validation doesn't pass, error message created
         if (!validateField(checkElement.value, checkElement.id)) {
             $(checkElement).addClass('errorInput');
             if (!hasErrorMessage) {
                 createErrorMessage(checkElement);
             }
-            $(checkElement).focus();
+            //  $(checkElement).focus();  -- this won't allow you to check all elements on form submit.
             fieldValidated = false;
         } else {
             //validation passes, remove error message, if exists
             $(checkElement).removeClass('errorInput');
             if (hasErrorMessage) {
                 if (isPaymentField) {
-                    $("fieldset:last legend").next().fadeOut(700, function() {
+                    $("fieldset:last legend").next().fadeOut(400, function() {
                         $(this).remove();
                     });
                 } else {
-                    $(checkElement).next().fadeOut(700, function() {
+                    $(checkElement).next().fadeOut(400, function() {
                         $(this).remove();
                     });
                 }
@@ -156,14 +156,16 @@ $(function() {
     }
 
     //Validation for 'Register for Activities' section - if no activity is checked.
-    function errorNoActivity() {
+    function errorNoActivity(e) {
         $activitiesLocation = $("fieldset.activities");
         if (!($activitiesLocation.children(":eq(0)").hasClass("error"))) {
             createErrorMessage($activitiesLocation[0]);
         }
-        $('html, body').animate({
-            scrollTop: $activitiesLocation.offset().top
-        }, 700);
+        if (!(e.type === 'submit')) {
+            $('html, body').animate({
+                scrollTop: $activitiesLocation.offset().top
+            }, 700);
+        }
         //validation has failed.
         return false;
     }
@@ -181,7 +183,7 @@ $(function() {
 
     $("#cc-num").on('keyup focusout', function(e) {
         if (!($("p.totalCost").length)) {
-            errorNoActivity();
+            errorNoActivity(e);
         } else {
             if ($("select#payment option:selected").val() === 'credit card') {
                 processValidation(e.target); 
@@ -257,7 +259,6 @@ $(function() {
             return text.replace(timeRegex, '$1');
         }
 
-        //const $activitiesSection = $("fieldset.activities");
         const $activitiesSection = $(e.target).parent().parent();
         //Has a property just been clicked and checked
         const clickChecked = $(e.target).prop("checked");
@@ -269,7 +270,7 @@ $(function() {
         //Get rid of error message if one exists
         if (clickChecked 
             && $activitiesSection.children(":eq(0)").hasClass("error")) {
-                $activitiesSection.children(":eq(0)").fadeOut(1000, function() {
+                $activitiesSection.children(":eq(0)").fadeOut(700, function() {
                     $(this).remove();
                 });
         }
@@ -330,7 +331,7 @@ $(function() {
             //if no activity has been selected in the Activities section,
             //scroll up to Activies Section error message
             if (!($("p.totalCost").length)) {
-                errorNoActivity()
+                errorNoActivity(e)
             }
 
             const optionSelected = $("select#payment option:selected").val();
@@ -368,43 +369,58 @@ $(function() {
     */
     //Validate fields, don't allow submission if any fields don't validate */
     $("form").submit(function(e) {
-        let allowFormSubmit = true;
         e.preventDefault();
-        //validate name and email fields.     
-        allowFormSubmit = processValidation($('#name')[0]);
-        if (allowFormSubmit) {
-            allowFormSubmit = processValidation($('#mail')[0]);
+        let invalidFields = false;      //boolean if any fields don't validate
+        
+        if (!processValidation($('#name')[0])) {
+            $("#name").addClass("errorInput");
+            invalidFields = true;
         }
 
-        //ensure Activity has been selected
-        if (allowFormSubmit) {
-            if (!($("p.totalCost").length)) {
-                allowFormSubmit = errorNoActivity();
+        if (!processValidation($('#mail')[0])) {
+            $("#mail").addClass("errorInput");
+            invalidFields = true;
+        }
+
+        //if there is no total cost, error message for no activity
+        if (!($("p.totalCost").length)) {
+            errorNoActivity(e);
+            invalidFields = true;
+        }
+
+        //because the credit card fields share one error message location, only one
+        //can be validated with an error message.
+        if ($("select#payment option:selected").val() === 'credit card') {
+            if (!(validateField($('#cc-num').val(), 'cc-num'))) {
+                processValidation($("#cc-num")[0]);
+                invalidFields = true;
+            } else if (!(validateField($('#zip').val(), 'zip'))) {
+                processValidation($("#zip")[0]);
+            } else {
+                processValidation($("#cvv")[0]);
+            }
+
+            //put red dotted border around zip and cvv fields if they don't validate
+            if (!(validateField($('#zip').val(), 'zip'))) {
+                $("#zip").addClass("errorInput");
+                invalidFields = true;
+            }
+            if (!(validateField($('#cvv').val(), 'cvv'))) {
+                $("#cvv").addClass("errorInput");
+                invalidFields = true;
             }
         }
 
-        //check three credit card fields if credit card option selected
-        //[Note: I had to call the validate fields function because the
-        // validation message was placed in the same place for all three payment fields.]
-        if (allowFormSubmit) {
-            if ($("select#payment option:selected").val() === 'credit card') {
-                if (!(validateField($('#cc-num').val(), 'cc-num'))) {
-                    allowFormSubmit = processValidation($("#cc-num")[0]);
-                } else if (!(validateField($('#zip').val(), 'zip'))) {
-                    allowFormSubmit =  processValidation($("#zip")[0]);
-                } else {
-                    allowFormSubmit = processValidation($("#cvv")[0]);
-                }
-            }
-        }
-
-        //Message if all fields validate.
-        if (allowFormSubmit) {
-            if (!$(".success").length) {
-                successHTML = `<div class="success">All form fields are validated. The form has been submitted!</div>`;
-                $(successHTML).hide().insertAfter("header").fadeIn(2000);
-            }
-            $('html, body').animate({scrollTop: '0px'}, 700);
+        //put error message and scroll to top of form if any fields don't validate
+        if (invalidFields) {
+            if (!($(".failHTML").length)) {
+                failHTML = `<div class="error failHTML">Please correct the errors below to submit this registration.</div>`;
+                $(failHTML).hide().insertAfter("header").fadeIn(2000);
+             }
+             $('html, body').animate({scrollTop: '0px'}, 700);
+        } else {
+            //reload page to simulate form submission
+            window.location.reload(false);
         }
     });
 });
